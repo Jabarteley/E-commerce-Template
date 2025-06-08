@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreshStarMart - Online Grocery Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom CSS for animations and enhancements */
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .cart-item-enter {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        
+        .cart-item-enter-active {
+            opacity: 1;
+            transform: translateX(0);
+            transition: all 300ms ease-in;
+        }
+        
+        .cart-item-exit {
+            opacity: 1;
+        }
+        
+        .cart-item-exit-active {
+            opacity: 0;
+            transform: translateX(20px);
+            transition: all 300ms ease-out;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Header -->
+    <header class="bg-green-600 text-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-shopping-basket text-2xl"></i>
+                <h1 class="text-2xl font-bold">FreshStarMart</h1>
+            </div>
+            
+            <div class="hidden md:flex items-center bg-white rounded-full px-4 py-2 flex-1 mx-6 max-w-xl">
+                <input type="text" placeholder="Search for products..." class="w-full outline-none text-gray-800">
+                <button class="text-gray-500 hover:text-green-600">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <button id="account-btn" class="hidden md:flex items-center space-x-1 hover:text-green-200">
+                    <i class="fas fa-user"></i>
+                    <span>Account</span>
+                </button>
+                <button id="cart-btn" class="flex items-center space-x-1 relative hover:text-green-200">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Cart</span>
+                    <span id="cart-count" class="absolute -top-2 -right-2 bg-yellow-400 text-black text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile search -->
+        <div class="md:hidden px-4 pb-3">
+            <div class="flex items-center bg-white rounded-full px-4 py-2">
+                <input type="text" placeholder="Search..." class="w-full outline-none text-gray-800">
+                <button class="text-gray-500 hover:text-green-600">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <nav class="bg-green-700 px-4 py-2">
+            <div class="container mx-auto flex overflow-x-auto space-x-6 hide-scrollbar">
+                <a href="#" class="whitespace-nowrap text-white hover:bg-green-600 px-3 py-1 rounded">Home</a>
+                <a href="#" class="whitespace-nowrap text-white hover:bg-green-600 px-3 py-1 rounded">Fruits & Vegetables</a>
+                <a href="#" class="whitespace-nowrap text-white hover:bg-green-600 px-3 py-1 rounded">Dairy & Eggs</a>
+                <a href="#" class="whitespace-nowrap text-white hover:bg-green-600 px-3 py-1 rounded">Meat & Seafood</a>
+                <a href="#" class="whitespace-nowrap text-white hover:bg-green-600 px-3 py-1 rounded">Bakery</a>
+                <a href="#" class="whitespace-nowrap text-white hover:bg-green-600 px-3 py-1 rounded">Beverages</a>
+                <a href="#" class="whitespace-nowrap text-white hover:bg-green-600 px-3 py-1 rounded">Snacks</a>
+                <a href="#" class="whitespace-nowrap text-white hover:bg-green-600 px-3 py-1 rounded">Household</a>
+            </div>
+        </nav>
+    </header>
+    
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-r from-green-500 to-green-600 text-white py-12">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 mb-8 md:mb-0">
+                <h2 class="text-4xl font-bold mb-4">Fresh Groceries Delivered to Your Door</h2>
+                <p class="text-xl mb-6">Shop the freshest produce, dairy, meats and more with same-day delivery.</p>
+                <button class="bg-white text-green-600 font-bold py-3 px-6 rounded-full hover:bg-gray-100 transition duration-300">
+                    Shop Now
+                </button>
+            </div>
+            <div class="md:w-1/2 flex justify-center">
+                <img src="https://images.unsplash.com/photo-1606787366850-de6330128bfc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" 
+                     alt="Fresh Groceries" 
+                     class="rounded-lg shadow-xl max-w-full h-auto max-h-80 object-cover">
+            </div>
+        </div>
+    </section>
+    
+    <!-- Categories -->
+    <section class="py-8 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl font-bold mb-6">Shop by Category</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <div class="category-card bg-gray-50 rounded-lg p-4 text-center hover:bg-green-50 cursor-pointer transition duration-300">
+                    <div class="bg-green-100 rounded-full p-3 inline-block mb-2">
+                        <i class="fas fa-apple-alt text-green-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-medium">Fruits</h3>
+                </div>
+                <div class="category-card bg-gray-50 rounded-lg p-4 text-center hover:bg-green-50 cursor-pointer transition duration-300">
+                    <div class="bg-green-100 rounded-full p-3 inline-block mb-2">
+                        <i class="fas fa-carrot text-orange-500 text-2xl"></i>
+                    </div>
+                    <h3 class="font-medium">Vegetables</h3>
+                </div>
+                <div class="category-card bg-gray-50 rounded-lg p-4 text-center hover:bg-green-50 cursor-pointer transition duration-300">
+                    <div class="bg-green-100 rounded-full p-3 inline-block mb-2">
+                        <i class="fas fa-cheese text-yellow-500 text-2xl"></i>
+                    </div>
+                    <h3 class="font-medium">Dairy</h3>
+                </div>
+                <div class="category-card bg-gray-50 rounded-lg p-4 text-center hover:bg-green-50 cursor-pointer transition duration-300">
+                    <div class="bg-green-100 rounded-full p-3 inline-block mb-2">
+                        <i class="fas fa-drumstick-bite text-red-500 text-2xl"></i>
+                    </div>
+                    <h3 class="font-medium">Meat</h3>
+                </div>
+                <div class="category-card bg-gray-50 rounded-lg p-4 text-center hover:bg-green-50 cursor-pointer transition duration-300">
+                    <div class="bg-green-100 rounded-full p-3 inline-block mb-2">
+                        <i class="fas fa-fish text-blue-500 text-2xl"></i>
+                    </div>
+                    <h3 class="font-medium">Seafood</h3>
+                </div>
+                <div class="category-card bg-gray-50 rounded-lg p-4 text-center hover:bg-green-50 cursor-pointer transition duration-300">
+                    <div class="bg-green-100 rounded-full p-3 inline-block mb-2">
+                        <i class="fas fa-bread-slice text-amber-700 text-2xl"></i>
+                    </div>
+                    <h3 class="font-medium">Bakery</h3>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Featured Products -->
+    <section class="py-8 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Featured Products</h2>
+                <a href="#" class="text-green-600 hover:underline">View All</a>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="products-container">
+                <!-- Products will be loaded here by JavaScript -->
+            </div>
+        </div>
+    </section>
+    
+    <!-- Special Offers -->
+    <section class="py-8 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl font-bold mb-6">Special Offers</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 flex flex-col md:flex-row items-center">
+                    <div class="md:w-1/3 mb-4 md:mb-0 flex justify-center">
+                        <img src="https://images.unsplash.com/photo-1576186726110-34d5164226c1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80" 
+                             alt="Organic Fruits" 
+                             class="rounded-lg h-32 w-32 object-cover">
+                    </div>
+                    <div class="md:w-2/3 md:pl-6">
+                        <h3 class="text-xl font-bold mb-2">20% Off Organic Fruits</h3>
+                        <p class="text-gray-600 mb-4">Enjoy fresh organic fruits with 20% discount on all items this week.</p>
+                        <button class="bg-yellow-400 text-yellow-900 font-bold py-2 px-4 rounded hover:bg-yellow-500 transition duration-300">
+                            Shop Now
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 flex flex-col md:flex-row items-center">
+                    <div class="md:w-1/3 mb-4 md:mb-0 flex justify-center">
+                        <img src="https://images.unsplash.com/photo-1550583720-b2532c3f1a1f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80" 
+                             alt="Dairy Products" 
+                             class="rounded-lg h-32 w-32 object-cover">
+                    </div>
+                    <div class="md:w-2/3 md:pl-6">
+                        <h3 class="text-xl font-bold mb-2">Buy 1 Get 1 Free on Dairy</h3>
+                        <p class="text-gray-600 mb-4">Special promotion on selected dairy products. Limited time only!</p>
+                        <button class="bg-blue-400 text-blue-900 font-bold py-2 px-4 rounded hover:bg-blue-500 transition duration-300">
+                            Shop Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Testimonials -->
+    <section class="py-12 bg-green-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl font-bold mb-8 text-center">What Our Customers Say</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="text-yellow-400">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4">"FreshMart has the best quality produce I've found online. Delivery is always on time and the fruits are so fresh!"</p>
+                    <div class="flex items-center">
+                        <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="Customer" class="w-10 h-10 rounded-full mr-3">
+                        <div>
+                            <h4 class="font-bold">Sarah Johnson</h4>
+                            <p class="text-gray-500 text-sm">Regular Customer</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="text-yellow-400">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4">"I love the convenience of ordering groceries online. The meat selection is excellent and always fresh."</p>
+                    <div class="flex items-center">
+                        <img src="https://randomuser.me/api/portraits/men/45.jpg" alt="Customer" class="w-10 h-10 rounded-full mr-3">
+                        <div>
+                            <h4 class="font-bold">Michael Chen</h4>
+                            <p class="text-gray-500 text-sm">New Customer</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="text-yellow-400">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4">"Great service and quality products. The only reason I didn't give 5 stars is because I wish they had more organic options."</p>
+                    <div class="flex items-center">
+                        <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Customer" class="w-10 h-10 rounded-full mr-3">
+                        <div>
+                            <h4 class="font-bold">Emily Rodriguez</h4>
+                            <p class="text-gray-500 text-sm">Health Enthusiast</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Newsletter -->
+    <section class="py-12 bg-green-600 text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-2xl font-bold mb-2">Subscribe to Our Newsletter</h2>
+            <p class="mb-6 max-w-2xl mx-auto">Get the latest updates on new products, special offers, and grocery tips delivered to your inbox.</p>
+            <div class="flex flex-col sm:flex-row justify-center max-w-md mx-auto">
+                <input type="email" placeholder="Your email address" class="px-4 py-3 rounded-l-full sm:rounded-r-none rounded-r-full mb-2 sm:mb-0 w-full text-gray-800">
+                <button class="bg-yellow-400 text-gray-900 font-bold px-6 py-3 rounded-r-full sm:rounded-l-none rounded-l-full hover:bg-yellow-500 transition duration-300">
+                    Subscribe
+                </button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fas fa-shopping-basket mr-2"></i> FreshMart
+                    </h3>
+                    <p class="text-gray-400">Your one-stop shop for fresh groceries delivered to your doorstep.</p>
+                    <div class="flex space-x-4 mt-4">
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-pinterest"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Home</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Shop</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Contact</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">FAQ</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Categories</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Fruits & Vegetables</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Dairy & Eggs</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Meat & Seafood</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Bakery</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Beverages</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Contact Us</h3>
+                    <address class="text-gray-400 not-italic">
+                        <p class="mb-2"><i class="fas fa-map-marker-alt mr-2"></i> 123 Grocery Street, Foodville</p>
+                        <p class="mb-2"><i class="fas fa-phone mr-2"></i> (123) 456-7890</p>
+                        <p class="mb-2"><i class="fas fa-envelope mr-2"></i> info@freshmart.com</p>
+                        <p><i class="fas fa-clock mr-2"></i> Mon-Sun: 8AM - 8PM</p>
+                    </address>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400">
+                <p>&copy; 2023 FreshMart. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Shopping Cart Sidebar -->
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full md:w-96 bg-white shadow-lg transform translate-x-full transition-transform duration-300 z-50 overflow-y-auto">
+        <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+            <h3 class="text-xl font-bold">Your Cart</h3>
+            <button id="close-cart" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-4" id="cart-items">
+            <!-- Cart items will be loaded here -->
+            <div class="text-center py-8" id="empty-cart-message">
+                <i class="fas fa-shopping-cart text-4xl text-gray-300 mb-4"></i>
+                <p class="text-gray-500">Your cart is empty</p>
+                <button class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                    Continue Shopping
+                </button>
+            </div>
+        </div>
+        <div class="p-4 border-t border-gray-200 hidden" id="cart-summary">
+            <div class="flex justify-between mb-2">
+                <span>Subtotal:</span>
+                <span id="cart-subtotal">$0.00</span>
+            </div>
+            <div class="flex justify-between mb-2">
+                <span>Delivery:</span>
+                <span>$5.00</span>
+            </div>
+            <div class="flex justify-between font-bold text-lg mb-4">
+                <span>Total:</span>
+                <span id="cart-total">$5.00</span>
+            </div>
+            <button class="w-full bg-green-600 text-white py-3 rounded hover:bg-green-700 transition duration-300">
+                Proceed to Checkout
+            </button>
+        </div>
+    </div>
+    
+    <!-- Overlay for cart sidebar -->
+    <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+    
+    <!-- Product Quick View Modal -->
+    <div id="quick-view-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
+            <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-xl font-bold">Product Details</h3>
+                <button id="close-quick-view" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="flex justify-center">
+                    <img id="quick-view-image" src="" alt="Product" class="rounded-lg max-h-80 object-contain">
+                </div>
+                <div>
+                    <h2 id="quick-view-name" class="text-2xl font-bold mb-2"></h2>
+                    <div class="flex items-center mb-4">
+                        <div class="text-yellow-400 mr-2">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <span class="text-gray-600">(24 reviews)</span>
+                    </div>
+                    <p id="quick-view-price" class="text-3xl font-bold text-green-600 mb-4"></p>
+                    <p id="quick-view-description" class="text-gray-600 mb-6"></p>
+                    
+                    <div class="flex items-center mb-6">
+                        <span class="mr-4">Quantity:</span>
+                        <div class="flex items-center border border-gray-300 rounded">
+                            <button class="px-3 py-1 text-xl" id="decrement-qty">-</button>
+                            <input type="number" value="1" min="1" class="w-12 text-center border-x border-gray-300 py-1" id="product-qty">
+                            <button class="px-3 py-1 text-xl" id="increment-qty">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-4">
+                        <button id="add-to-cart-btn" class="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 flex-1">
+                            Add to Cart
+                        </button>
+                        <button class="border border-green-600 text-green-600 px-6 py-3 rounded hover:bg-green-50 flex-1">
+                            <i class="far fa-heart"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <div class="flex items-start mb-2">
+                            <i class="fas fa-truck text-green-600 mt-1 mr-2"></i>
+                            <div>
+                                <p class="font-medium">Free Delivery</p>
+                                <p class="text-gray-600 text-sm">For orders over $50</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-undo text-green-600 mt-1 mr-2"></i>
+                            <div>
+                                <p class="font-medium">Easy Returns</p>
+                                <p class="text-gray-600 text-sm">Within 7 days</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded shadow-lg transform translate-y-16 transition-transform duration-300 z-50 hidden">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span id="toast-message">Product added to cart!</span>
+        </div>
+    </div>
+    
+    <script>
+        // Product Data
+        const products = [
+            {
+                id: 1,
+                name: "Organic Bananas",
+                price: 2.99,
+                image: "https://images.unsplash.com/photo-1603833665858-e61d17a86224?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80",
+                category: "Fruits",
+                description: "Sweet and creamy organic bananas, perfect for smoothies or as a healthy snack.",
+                unit: "per lb"
+            },
+            {
+                id: 2,
+                name: "Fresh Strawberries",
+                price: 4.99,
+                image: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                category: "Fruits",
+                description: "Juicy and sweet strawberries, packed with vitamins and antioxidants.",
+                unit: "1 lb package"
+            },
+            {
+                id: 3,
+                name: "Organic Avocados",
+                price: 1.99,
+                image: "https://images.unsplash.com/photo-1594282486555-1fc61c8701f5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80",
+                category: "Vegetables",
+                description: "Creamy organic avocados, great for guacamole, salads or toast toppings.",
+                unit: "each"
+            },
+            {
+                id: 4,
+                name: "Organic Carrots",
+                price: 1.49,
+                image: "https://images.unsplash.com/photo-1447175008436-054170c2e979?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                category: "Vegetables",
+                description: "Sweet and crunchy organic carrots, perfect for snacking or cooking.",
+                unit: "per lb"
+            },
+            {
+                id: 5,
+                name: "Free Range Eggs",
+                price: 3.99,
+                image: "https://images.unsplash.com/photo-1587486913049-53fc88980ebc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                category: "Dairy & Eggs",
+                description: "Farm fresh free range eggs from happy, healthy chickens.",
+                unit: "dozen"
+            },
+            {
+                id: 6,
+                name: "Organic Milk",
+                price: 4.49,
+                image: "https://images.unsplash.com/photo-1550583720-b2532c3f1a1f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80",
+                category: "Dairy & Eggs",
+                description: "Creamy organic whole milk from grass-fed cows.",
+                unit: "1 gallon"
+            },
+            {
+                id: 7,
+                name: "Grass-Fed Beef",
+                price: 8.99,
+                image: "https://images.unsplash.com/photo-1558030135-4d676f61d8a6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                category: "Meat & Seafood",
+                description: "Premium grass-fed ground beef, perfect for burgers or meatballs.",
+                unit: "per lb"
+            },
+            {
+                id: 8,
+                name: "Fresh Salmon Fillet",
+                price: 12.99,
+                image: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                category: "Meat & Seafood",
+                description: "Fresh wild-caught salmon fillet, rich in omega-3 fatty acids.",
+                unit: "per lb"
+            }
+        ];
+        
+        // Shopping Cart
+        let cart = [];
+        
+        // DOM Elements
+        const productsContainer = document.getElementById('products-container');
+        const cartBtn = document.getElementById('cart-btn');
+        const closeCartBtn = document.getElementById('close-cart');
+        const cartSidebar = document.getElementById('cart-sidebar');
+        const cartOverlay = document.getElementById('cart-overlay');
+        const cartItemsContainer = document.getElementById('cart-items');
+        const emptyCartMessage = document.getElementById('empty-cart-message');
+        const cartSummary = document.getElementById('cart-summary');
+        const cartSubtotal = document.getElementById('cart-subtotal');
+        const cartTotal = document.getElementById('cart-total');
+        const cartCount = document.getElementById('cart-count');
+        const quickViewModal = document.getElementById('quick-view-modal');
+        const closeQuickViewBtn = document.getElementById('close-quick-view');
+        const quickViewImage = document.getElementById('quick-view-image');
+        const quickViewName = document.getElementById('quick-view-name');
+        const quickViewPrice = document.getElementById('quick-view-price');
+        const quickViewDescription = document.getElementById('quick-view-description');
+        const productQty = document.getElementById('product-qty');
+        const incrementQtyBtn = document.getElementById('increment-qty');
+        const decrementQtyBtn = document.getElementById('decrement-qty');
+        const addToCartBtn = document.getElementById('add-to-cart-btn');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+        
+        // Current product being viewed/added to cart
+        let currentProduct = null;
+        let currentQty = 1;
+        
+        // Initialize the app
+        function init() {
+            renderProducts();
+            setupEventListeners();
+        }
+        
+        // Render products to the page
+        function renderProducts() {
+            productsContainer.innerHTML = '';
+            
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card bg-white rounded-lg shadow-md overflow-hidden transition duration-300 cursor-pointer';
+                productCard.innerHTML = `
+                    <div class="relative">
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-48 object-cover">
+                        <div class="absolute top-2 right-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded">
+                            ${product.category}
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-1">${product.name}</h3>
+                        <p class="text-green-600 font-bold text-xl mb-2">$${product.price.toFixed(2)}</p>
+                        <p class="text-gray-500 text-sm mb-3">${product.unit}</p>
+                        <button class="add-to-cart-btn w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition duration-300" data-id="${product.id}">
+                            Add to Cart
+                        </button>
+                    </div>
+                `;
+                
+                productCard.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('add-to-cart-btn')) {
+                        openQuickView(product);
+                    }
+                });
+                
+                productsContainer.appendChild(productCard);
+            });
+            
+            // Add event listeners to all "Add to Cart" buttons
+            document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const productId = parseInt(btn.getAttribute('data-id'));
+                    const product = products.find(p => p.id === productId);
+                    addToCart(product, 1);
+                });
+            });
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Cart toggle
+            cartBtn.addEventListener('click', toggleCart);
+            closeCartBtn.addEventListener('click', toggleCart);
+            cartOverlay.addEventListener('click', toggleCart);
+            
+            // Quick view modal
+            closeQuickViewBtn.addEventListener('click', closeQuickView);
+            
+            // Quantity controls
+            incrementQtyBtn.addEventListener('click', () => {
+                currentQty++;
+                productQty.value = currentQty;
+            });
+            
+            decrementQtyBtn.addEventListener('click', () => {
+                if (currentQty > 1) {
+                    currentQty--;
+                    productQty.value = currentQty;
+                }
+            });
+            
+            productQty.addEventListener('change', (e) => {
+                const value = parseInt(e.target.value);
+                if (value >= 1) {
+                    currentQty = value;
+                } else {
+                    currentQty = 1;
+                    productQty.value = 1;
+                }
+            });
+            
+            // Add to cart from quick view
+            addToCartBtn.addEventListener('click', () => {
+                if (currentProduct) {
+                    addToCart(currentProduct, currentQty);
+                    closeQuickView();
+                }
+            });
+        }
+        
+        // Toggle cart sidebar
+        function toggleCart() {
+            cartSidebar.classList.toggle('translate-x-full');
+            cartOverlay.classList.toggle('hidden');
+            document.body.classList.toggle('overflow-hidden');
+            
+            if (!cartSidebar.classList.contains('translate-x-full')) {
+                renderCartItems();
+            }
+        }
+        
+        // Open quick view modal
+        function openQuickView(product) {
+            currentProduct = product;
+            currentQty = 1;
+            productQty.value = 1;
+            
+            quickViewImage.src = product.image;
+            quickViewImage.alt = product.name;
+            quickViewName.textContent = product.name;
+            quickViewPrice.textContent = `$${product.price.toFixed(2)}`;
+            quickViewDescription.textContent = product.description;
+            
+            quickViewModal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+        
+        // Close quick view modal
+        function closeQuickView() {
+            quickViewModal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+        
+        // Add product to cart
+        function addToCart(product, quantity) {
+            const existingItem = cart.find(item => item.id === product.id);
+            
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                cart.push({
+                    ...product,
+                    quantity: quantity
+                });
+            }
+            
+            updateCartCount();
+            showToast(`${quantity} ${product.name} added to cart`);
+        }
+        
+        // Remove product from cart
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            updateCartCount();
+            renderCartItems();
+        }
+        
+        // Update quantity of product in cart
+        function updateCartItemQuantity(productId, newQuantity) {
+            const item = cart.find(item => item.id === productId);
+            if (item) {
+                item.quantity = newQuantity;
+            }
+            
+            if (item.quantity < 1) {
+                removeFromCart(productId);
+            } else {
+                renderCartItems();
+            }
+        }
+        
+        // Update cart count in header
+        function updateCartCount() {
+            const count = cart.reduce((total, item) => total + item.quantity, 0);
+            cartCount.textContent = count;
+        }
+        
+        // Render cart items
+        function renderCartItems() {
+            if (cart.length === 0) {
+                emptyCartMessage.classList.remove('hidden');
+                cartSummary.classList.add('hidden');
+                cartItemsContainer.innerHTML = '';
+                return;
+            }
+            
+            emptyCartMessage.classList.add('hidden');
+            cartSummary.classList.remove('hidden');
+            
+            let itemsHTML = '';
+            let subtotal = 0;
+            
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                
+                itemsHTML += `
+                    <div class="cart-item mb-4 pb-4 border-b border-gray-200">
+                        <div class="flex">
+                            <div class="w-20 h-20 flex-shrink-0">
+                                <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover rounded">
+                            </div>
+                            <div class="ml-4 flex-1">
+                                <div class="flex justify-between">
+                                    <h4 class="font-medium">${item.name}</h4>
+                                    <button class="remove-item text-gray-400 hover:text-red-500" data-id="${item.id}">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <p class="text-gray-600 text-sm">$${item.price.toFixed(2)} ${item.unit}</p>
+                                <div class="flex items-center mt-2">
+                                    <div class="flex items-center border border-gray-300 rounded">
+                                        <button class="decrement-qty px-2 py-1" data-id="${item.id}">-</button>
+                                        <input type="number" value="${item.quantity}" min="1" class="w-12 text-center border-x border-gray-300 py-1 quantity-input" data-id="${item.id}">
+                                        <button class="increment-qty px-2 py-1" data-id="${item.id}">+</button>
+                                    </div>
+                                    <span class="ml-auto font-medium">$${itemTotal.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            cartItemsContainer.innerHTML = itemsHTML;
+            cartSubtotal.textContent = `$${subtotal.toFixed(2)}`;
+            cartTotal.textContent = `$${(subtotal + 5).toFixed(2)}`;
+            
+            // Add event listeners to cart item buttons
+            document.querySelectorAll('.remove-item').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const productId = parseInt(btn.getAttribute('data-id'));
+                    removeFromCart(productId);
+                });
+            });
+            
+            document.querySelectorAll('.increment-qty').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const productId = parseInt(btn.getAttribute('data-id'));
+                    const item = cart.find(item => item.id === productId);
+                    if (item) {
+                        updateCartItemQuantity(productId, item.quantity + 1);
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.decrement-qty').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const productId = parseInt(btn.getAttribute('data-id'));
+                    const item = cart.find(item => item.id === productId);
+                    if (item) {
+                        updateCartItemQuantity(productId, item.quantity - 1);
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.quantity-input').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const productId = parseInt(e.target.getAttribute('data-id'));
+                    const newQuantity = parseInt(e.target.value);
+                    if (!isNaN(newQuantity) && newQuantity >= 1) {
+                        updateCartItemQuantity(productId, newQuantity);
+                    }
+                });
+            });
+        }
+        
+        // Show toast notification
+        function showToast(message) {
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden');
+            toast.classList.remove('translate-y-16');
+            toast.classList.add('translate-y-0');
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0');
+                toast.classList.add('translate-y-16');
+                setTimeout(() => {
+                    toast.classList.add('hidden');
+                }, 300);
+            }, 3000);
+        }
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
